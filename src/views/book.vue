@@ -1,6 +1,6 @@
 <template>
   <div class="book-wrapper">
-    <div class="book" style="transform: translateX(0);" :style="{ transform: 'translate3d(0, ' + left + 'px, 0)' }">
+    <div class="book" :style="{ transform: 'translate3d(' + left + 'px, 0, 0)' }">
       <h3>第十一章光源</h3>
       <p>　　第十一章光源</p>
       <p>　　“我们到底来到了哪里？我想回家……”有些女同学忍不住哭泣出声。</p>
@@ -54,12 +54,18 @@
 </template>
 
 <script>
+import Tween from "../assets/js/tween.js";
+
 export default {
   name: "book",
   data() {
     return {
       left: 0, // 偏移距离
+      loadLeft: 0, // 记录原先的位置
       touchX: 0, // 记录水平点击的位移
+      currentX: 0, // 记录水平移动的位移
+      distance: 0,
+      page: 0
     }
   },
   mounted() {
@@ -79,11 +85,27 @@ export default {
     // 开始点击
     touchStart(e) {
       console.log(e)
+      this.touchX = e.touches[0].clientX;
     },
     // 点击移动
-    touchMove() {},
+    touchMove(e) {
+      console.log(e)
+      this.currentX = e.touches[0].clientX;
+      var diff = this.currentX - this.touchX;
+      this.left = this.left + ((diff > 0) ? Math.pow(diff, 0.8) : (-Math.pow(Math.abs(diff), 0.8)));
+      this.touchX = this.currentX;
+    },
     // 点击完成
-    touchEnd() {}
+    touchEnd() {
+      this.distance = this.left - this.loadLeft;
+      if (this.direction > 0) {
+        this.page --;
+      } else if(this.direction < 0) {
+        this.page ++;
+      }
+      // 纠正到正确的位置
+
+    }
   }
 }
 </script>

@@ -1,6 +1,6 @@
 <template>
   <div class="book-wrapper">
-    <div class="book" :style="{ transform: 'translate3d(' + left + 'px, 0, 0)' }">
+    <div class="book" :style="{ transform: 'translate3d(' + left + 'px, 0, 0)' }" ref="bookWrapperRef">
       <h3>第十一章光源</h3>
       <p>　　第十一章光源</p>
       <p>　　“我们到底来到了哪里？我想回家……”有些女同学忍不住哭泣出声。</p>
@@ -65,16 +65,33 @@ export default {
       touchX: 0, // 记录水平点击的位移
       currentX: 0, // 记录水平移动的位移
       distance: 0,
-      page: 0
+      page: 0,
+      total: 0,
+      scrollDistance: 0,
+      isCorrect: false // 纠正位置状态
     }
   },
   mounted() {
+    this.$nextTick(() => {
+      this.initBookContainer();
+    })
     this.init();
+
+    window.onresize = () => {
+      this.initBookContainer();
+    }
   },
   methods: {
     // 初始化
     init() {
       this.bindTouchEvents();
+    },
+    // 获取书籍宽度 页宽度
+    initBookContainer() {
+      this.left = 0;
+      this.scrollDistance = document.body.clientWidth || document.documentElement.clientWidth;
+      var contentWidth = this.$refs.bookWrapperRef.scrollWidth
+      this.total = Math.ceil(contentWidth / this.scrollDistance) - 1;
     },
     // 绑定手势
     bindTouchEvents() {
@@ -85,10 +102,12 @@ export default {
     // 开始点击
     touchStart(e) {
       console.log(e)
+      if (this.isCorrect) return;
       this.touchX = e.touches[0].clientX;
     },
     // 点击移动
     touchMove(e) {
+      if (this.isCorrect) return;
       console.log(e)
       this.currentX = e.touches[0].clientX;
       var diff = this.currentX - this.touchX;
@@ -97,14 +116,50 @@ export default {
     },
     // 点击完成
     touchEnd() {
+      if (this.isCorrect) return;
       this.distance = this.left - this.loadLeft;
-      if (this.direction > 0) {
-        this.page --;
-      } else if(this.direction < 0) {
-        this.page ++;
+      this.loadLeft = this.left;
+      console.log(this.left, this.loadLeft)
+      if (this.distance > 0) {
+        this.page--;
+      } else if (this.distance < 0) {
+        this.page++;
+      } else {
+        return;
       }
-      // 纠正到正确的位置
-
+      this.correctPosition();
+    },
+    // 纠正到正确的位置
+    correctPosition() {
+      console.log(this.page, this.total)
+      if (this.page <= -1) {
+        this.page = 0;
+        this.distance = -1;
+      } else if (this.total < this.page) {
+        this.page = this.total;
+        this.distance = 1;
+      }
+      var correctPosition = -this.page * this.scrollDistance;
+      console.log(correctPosition, this.left)
+      var offset = (this.distance < 0) ? -15 : 15;
+      setTimeout(() => {
+        var timer = null;
+        var that = this;
+        cancelAnimationFrame(timer);
+        timer = requestAnimationFrame(function fn() {
+          var oLeft = that.left;
+          if (((that.left > correctPosition) && (that.distance < 0)) || ((that.left < correctPosition) && (that.distance > 0))) {
+            that.isCorrect = true
+            that.left = Math.ceil(Tween.Quart.easeInOut(10, oLeft, offset, 10));
+            timer = requestAnimationFrame(fn);
+          } else {
+            cancelAnimationFrame(timer);
+            that.isCorrect = false
+            that.left = correctPosition;
+            that.loadLeft = that.left;
+          }
+        });
+      });
     }
   }
 }

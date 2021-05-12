@@ -21,7 +21,9 @@ export default {
       canvasElArr: [],
       page: 0,
       total: 0,
-      leftBox: 0
+      leftBox: 0,
+      isCorrect: false,
+      scrollDistance: 0
     }
   },
   mounted() {
@@ -68,6 +70,10 @@ export default {
     })
   },
   methods: {
+    // 页面限制
+    limitPosition(position) {
+      return Math.max(Math.min(0, position), -this.scrollDistance)
+    },
     setCanvasItemRef(el) {
       this.canvasElArr.push(el)
     },
@@ -132,46 +138,42 @@ export default {
     },
     // 开始点击
     touchStart(e) {
+      if (this.isCorrect) return;
       console.log(e)
       this.touchX = e.touches[0].clientX;
       this.currentX = this.touchX
+      this.distance = 0;
     },
     // 点击移动
     touchMove(e) {
-      console.log(e)
+      if (this.isCorrect) return;
       var diff = e.touches[0].clientX - this.currentX;
+      var page = this.page;
       var moveOffset = ((diff > 0) ? Math.pow(diff, 0.8) : (-Math.pow(Math.abs(diff), 0.8)))
-      if (this.currentX < this.touchX) {
-        this.pagesLeft[this.page] = (this.pagesLeft[this.page] || 0) + moveOffset;
-      } else if (this.page === 0) {
-        // this.pagesLeft[this.page] = (this.pagesLeft[this.page] || 0) + moveOffset;
-        // this.leftBox = this.leftBox + moveOffset
-      } else {
-        console.log('当前页', this.page, this.pagesLeft)
-        this.pagesLeft[this.page - 1] = (this.pagesLeft[this.page - 1] || 0) + moveOffset;
+      // console.log(this.currentX, this.touchX, this.page, this.pagesLeft[0])
+      if (this.currentX > this.touchX) {
+        page = page - 1;
       }
+      this.pagesLeft[page] = this.limitPosition((this.pagesLeft[page] || 0) + moveOffset);
       this.currentX = e.touches[0].clientX;
       this.distance = this.currentX - this.touchX
+      if ((this.distance > 0 && this.page <= 0) || (this.distance < 0 && this.page >= (this.total - 1))) {
+        this.distance = 0
+        this.pagesLeft[this.page] = 0;
+      }
     },
     // 点击完成
     touchEnd() {
-      // this.loadPagesLeft[this.page] = this.pagesLeft[this.page];
-      // console.log(this.left, this.loadPagesLeft)
+      console.log(this.distance)
+      if (this.isCorrect) return;
       if (this.distance !== 0) {
+        this.isCorrect = true;
         this.correctPosition();
       }
     },
     // 纠正到正确的位置
     correctPosition() {
       console.log(this.page, this.total)
-      // if (this.page <= -1) {
-      //   this.page = 0;
-      //   this.distance = -1;
-      // } else if (this.total < this.page) {
-      //   this.page = this.total;
-      //   this.distance = 1;
-      // }
-      var correctPosition = this.scrollDistance;
       console.log(this.distance)
       // var offset = (this.distance < 0) ? -15 : 15;
       setTimeout(() => {
@@ -190,32 +192,23 @@ export default {
               cancelAnimationFrame(timer);
               that.pagesLeft[that.page] = -that.scrollDistance;
               that.page++;
+              that.isCorrect = false;
               // that.loadLeft = that.left;
             }
           } else if (that.distance > 0) {
-            oLeft = that.pagesLeft[that.page-1];
+            oLeft = that.pagesLeft[that.page - 1];
             console.log(oLeft)
             if (oLeft < 0) {
-              that.pagesLeft[that.page-1] = Math.ceil(Tween.Quart.easeInOut(10, oLeft, 10, 10));
+              that.pagesLeft[that.page - 1] = Math.ceil(Tween.Quart.easeInOut(10, oLeft, 10, 10));
               console.log(that.pagesLeft)
               timer = requestAnimationFrame(fn);
             } else {
               cancelAnimationFrame(timer);
-              that.pagesLeft[that.page-1] = 0;
+              that.pagesLeft[that.page - 1] = 0;
               that.page--;
+              that.isCorrect = false;
             }
           }
-          // var oLeft = that.left;
-          // if (((that.left > correctPosition) && (that.distance < 0)) || ((that.left < correctPosition) && (that.distance > 0))) {
-          //   that.isCorrect = true
-          //   that.left = Math.ceil(Tween.Quart.easeInOut(10, oLeft, offset, 10));
-          //   timer = requestAnimationFrame(fn);
-          // } else {
-          //   cancelAnimationFrame(timer);
-          //   that.isCorrect = false
-          //   that.left = correctPosition;
-          //   that.loadLeft = that.left;
-          // }
         });
       });
     }

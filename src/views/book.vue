@@ -101,14 +101,14 @@ export default {
     },
     // 开始点击
     touchStart(e) {
-      console.log(e)
+      // console.log(e)
       if (this.isCorrect) return;
       this.touchX = e.touches[0].clientX;
     },
     // 点击移动
     touchMove(e) {
       if (this.isCorrect) return;
-      console.log(e)
+      // console.log(e)
       this.currentX = e.touches[0].clientX;
       var diff = this.currentX - this.touchX;
       this.left = this.left + ((diff > 0) ? Math.pow(diff, 0.8) : (-Math.pow(Math.abs(diff), 0.8)));
@@ -131,7 +131,7 @@ export default {
     },
     // 纠正到正确的位置
     correctPosition() {
-      console.log(this.page, this.total)
+      // console.log(this.page, this.total)
       if (this.page <= -1) {
         this.page = 0;
         this.distance = -1;
@@ -140,7 +140,7 @@ export default {
         this.distance = 1;
       }
       var correctPosition = -this.page * this.scrollDistance;
-      console.log(correctPosition, this.left)
+      // console.log(correctPosition, this.left)
       var offset = (this.distance < 0) ? -15 : 15;
       setTimeout(() => {
         var timer = null;

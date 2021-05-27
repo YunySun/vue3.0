@@ -1,9 +1,9 @@
 <template>
   <div class="wrapper">
     <div class="left-box" v-if="page === 0" :style="{transform: 'translate3d(' + leftBox + 'px, 0, 0)'}"></div>
-    <canvas class="canvas" width="360" height="640" v-for="(item, index) in pages" :ref="setCanvasItemRef"
+    <canvas class="canvas" :width="scrollDistance" :height="scrollDistanceH" v-for="(item, index) in pages" :ref="setCanvasItemRef"
             :style="{zIndex: (pagesLeft[index] === -scrollDistance ? 0-index : 999-index), transform: 'translate3d(' + (pagesLeft[index]||0) + 'px, 0, 0)'}"></canvas>
-    <canvas id="canvas" width="360" height="640" v-show="false"></canvas>
+    <canvas id="canvas" :width="scrollDistance" :height="scrollDistanceH" v-show="false"></canvas>
   </div>
 </template>
 
@@ -29,47 +29,52 @@ export default {
   mounted() {
     this.$nextTick(() => {
       this.initBookContainer();
+      this.drawCanvas();
     })
     this.init();
 
     window.onresize = () => {
       this.initBookContainer();
     }
-    var result = this.breakLinesForCanvas(
-        '使用很寻常的二分查找，如果某一个位置之前的文字宽度小于等于设定的宽度，并且它之后一个字之前的文字宽度大于设定的宽度，那么这个位置就是文本的换行点。上面只是找到一个换行点，对于输入的一段文本，需要循环查找，直到不存在这样的换行点为止, 完整的代码如下使用很寻常的二分查找，如果某一个位置之前的文字宽度小于等于设定的宽度，并且它之后一个字之前的文字宽度大于设定的宽度，那么这个位置就是文本的换行点。上面只是找到一个换行点，对于输入的一段文本，需要循环查找，直到不存在这样的换行点为止, 完整的代码如下使用很寻常的二分查找，如果某一个位置之前的文字宽度小于等于设定的宽度，并且它之后一个字之前的文字宽度大于设定的宽度，那么这个位置就是文本的换行点。上面只是找到一个换行点，对于输入的一段文本，需要循环查找，直到不存在这样的换行点为止, 完整的代码如下使用很寻常的二分查找，如果某一个位置之前的文字宽度小于等于设定的宽度，并且它之后一个字之前的文字宽度大于设定的宽度，那么这个位置就是文本的换行点。上面只是找到一个换行点，对于输入的一段文本，需要循环查找，直到不存在这样的换行点为止, 完整的代码如下使用很寻常的二分查找，如果某一个位置之前的文字宽度小于等于设定的宽度，并且它之后一个字之前的文字宽度大于设定的宽度，那么这个位置就是文本的换行点。上面只是找到一个换行点，对于输入的一段文本，需要循环查找，直到不存在这样的换行点为止, 完整的代码如下使用很寻常的二分查找，如果某一个位置之前的文字宽度小于等于设定的宽度，并且它之后一个字之前的文字宽度大于设定的宽度，那么这个位置就是文本的换行点。上面只是找到一个换行点，对于输入的一段文本，需要循环查找，直到不存在这样的换行点为止, 完整的代码如下使用很寻常的二分查找，如果某一个位置之前的文字宽度小于等于设定的宽度，并且它之后一个字之前的文字宽度大于设定的宽度，那么这个位置就是文本的换行点。上面只是找到一个换行点，对于输入的一段文本，需要循环查找，直到不存在这样的换行点为止, 完整的代码如下使用很寻常的二分查找，如果某一个位置之前的文字宽度小于等于设定的宽度，并且它之后一个字之前的文字宽度大于设定的宽度，那么这个位置就是文本的换行点。上面只是找到一个换行点，对于输入的一段文本，需要循环查找，直到不存在这样的换行点为止, 完整的代码如下使用很寻常的二分查找，如果某一个位置之前的文字宽度小于等于设定的宽度，并且它之后一个字之前的文字宽度大于设定的宽度，那么这个位置就是文本的换行点。上面只是找到一个换行点，对于输入的一段文本，需要循环查找，直到不存在这样的换行点为止, 完整的代码如下使用很寻常的二分查找，如果某一个位置之前的文字宽度小于等于设定的宽度，并且它之后一个字之前的文字宽度大于设定的宽度，那么这个位置就是文本的换行点。上面只是找到一个换行点，对于输入的一段文本，需要循环查找，直到不存在这样的换行点为止, 完整的代码如下使用很寻常的二分查找，如果某一个位置之前的文字宽度小于等于设定的宽度，并且它之后一个字之前的文字宽度大于设定的宽度，那么这个位置就是文本的换行点。上面只是找到一个换行点，对于输入的一段文本，需要循环查找，直到不存在这样的换行点为止, 完整的代码如下',
-        360, '16px 微软雅黑');
-    console.log(result);
 
-    var lineHeight = 30;
-    // var context = document.getElementById('canvas').getContext('2d');
-    // context.font = "16px 微软雅黑";
-
-    // result.forEach(function (line, index) {
-    //   context.fillText(line, 0, lineHeight * index + 30);
-    // });
-    var bookArr = []
-    var maxColumn = Math.ceil(640 / 30)
-    result.forEach((item, index) => {
-      var bookArrIndex = Math.floor(index / maxColumn);
-      if (!bookArr[bookArrIndex]) {
-        bookArr[bookArrIndex] = [];
-      }
-      bookArr[bookArrIndex].push(item)
-    })
-    this.pages = bookArr;
-    this.total = this.pages.length
-    this.$nextTick(() => {
-      console.log(this.canvasElArr)
-      this.canvasElArr.forEach((canvas, index) => {
-        var context = canvas.getContext('2d');
-        context.font = "16px 微软雅黑";
-        this.pages[index].forEach((line, pIndex) => {
-          context.fillText(line, 0, lineHeight * pIndex + 30);
-        })
-      });
-    })
   },
   methods: {
+    // drawCanvas
+    drawCanvas() {
+      var result = this.breakLinesForCanvas(
+          '使用很寻常的二分查找，如果某一个位置之前的文字宽度小于等于设定的宽度，并且它之后一个字之前的文字宽度大于设定的宽度，那么这个位置就是文本的换行点。上面只是找到一个换行点，对于输入的一段文本，需要循环查找，直到不存在这样的换行点为止, 完整的代码如下使用很寻常的二分查找，如果某一个位置之前的文字宽度小于等于设定的宽度，并且它之后一个字之前的文字宽度大于设定的宽度，那么这个位置就是文本的换行点。上面只是找到一个换行点，对于输入的一段文本，需要循环查找，直到不存在这样的换行点为止, 完整的代码如下使用很寻常的二分查找，如果某一个位置之前的文字宽度小于等于设定的宽度，并且它之后一个字之前的文字宽度大于设定的宽度，那么这个位置就是文本的换行点。上面只是找到一个换行点，对于输入的一段文本，需要循环查找，直到不存在这样的换行点为止, 完整的代码如下使用很寻常的二分查找，如果某一个位置之前的文字宽度小于等于设定的宽度，并且它之后一个字之前的文字宽度大于设定的宽度，那么这个位置就是文本的换行点。上面只是找到一个换行点，对于输入的一段文本，需要循环查找，直到不存在这样的换行点为止, 完整的代码如下使用很寻常的二分查找，如果某一个位置之前的文字宽度小于等于设定的宽度，并且它之后一个字之前的文字宽度大于设定的宽度，那么这个位置就是文本的换行点。上面只是找到一个换行点，对于输入的一段文本，需要循环查找，直到不存在这样的换行点为止, 完整的代码如下使用很寻常的二分查找，如果某一个位置之前的文字宽度小于等于设定的宽度，并且它之后一个字之前的文字宽度大于设定的宽度，那么这个位置就是文本的换行点。上面只是找到一个换行点，对于输入的一段文本，需要循环查找，直到不存在这样的换行点为止, 完整的代码如下使用很寻常的二分查找，如果某一个位置之前的文字宽度小于等于设定的宽度，并且它之后一个字之前的文字宽度大于设定的宽度，那么这个位置就是文本的换行点。上面只是找到一个换行点，对于输入的一段文本，需要循环查找，直到不存在这样的换行点为止, 完整的代码如下使用很寻常的二分查找，如果某一个位置之前的文字宽度小于等于设定的宽度，并且它之后一个字之前的文字宽度大于设定的宽度，那么这个位置就是文本的换行点。上面只是找到一个换行点，对于输入的一段文本，需要循环查找，直到不存在这样的换行点为止, 完整的代码如下使用很寻常的二分查找，如果某一个位置之前的文字宽度小于等于设定的宽度，并且它之后一个字之前的文字宽度大于设定的宽度，那么这个位置就是文本的换行点。上面只是找到一个换行点，对于输入的一段文本，需要循环查找，直到不存在这样的换行点为止, 完整的代码如下使用很寻常的二分查找，如果某一个位置之前的文字宽度小于等于设定的宽度，并且它之后一个字之前的文字宽度大于设定的宽度，那么这个位置就是文本的换行点。上面只是找到一个换行点，对于输入的一段文本，需要循环查找，直到不存在这样的换行点为止, 完整的代码如下使用很寻常的二分查找，如果某一个位置之前的文字宽度小于等于设定的宽度，并且它之后一个字之前的文字宽度大于设定的宽度，那么这个位置就是文本的换行点。上面只是找到一个换行点，对于输入的一段文本，需要循环查找，直到不存在这样的换行点为止, 完整的代码如下',
+          this.scrollDistance, '16px 微软雅黑');
+      console.log(result);
+
+      var lineHeight = 30;
+      // var context = document.getElementById('canvas').getContext('2d');
+      // context.font = "16px 微软雅黑";
+
+      // result.forEach(function (line, index) {
+      //   context.fillText(line, 0, lineHeight * index + 30);
+      // });
+      var bookArr = []
+      var maxColumn = Math.ceil(this.scrollDistanceH / 30)
+      result.forEach((item, index) => {
+        var bookArrIndex = Math.floor(index / maxColumn);
+        if (!bookArr[bookArrIndex]) {
+          bookArr[bookArrIndex] = [];
+        }
+        bookArr[bookArrIndex].push(item)
+      })
+      this.pages = bookArr;
+      this.total = this.pages.length
+      this.$nextTick(() => {
+        console.log(this.canvasElArr)
+        this.canvasElArr.forEach((canvas, index) => {
+          var context = canvas.getContext('2d');
+          context.font = "16px 微软雅黑";
+          this.pages[index].forEach((line, pIndex) => {
+            context.fillText(line, 0, lineHeight * pIndex + 30);
+          })
+        });
+      })
+    },
     // 页面限制
     limitPosition(position) {
       return Math.max(Math.min(0, position), -this.scrollDistance)
@@ -127,6 +132,7 @@ export default {
     initBookContainer() {
       this.left = 0;
       this.scrollDistance = document.body.clientWidth || document.documentElement.clientWidth;
+      this.scrollDistanceH = document.body.clientHeight || document.documentElement.clientHeight;
       this.leftBox = -this.scrollDistance;
       console.log(this.leftBox)
     },
@@ -139,7 +145,7 @@ export default {
     // 开始点击
     touchStart(e) {
       if (this.isCorrect) return;
-      console.log(e)
+      // console.log(e)
       this.touchX = e.touches[0].clientX;
       this.currentX = this.touchX
       this.distance = 0;
@@ -164,7 +170,7 @@ export default {
     },
     // 点击完成
     touchEnd() {
-      console.log(this.distance)
+      // console.log(this.distance)
       if (this.isCorrect) return;
       if (this.distance !== 0) {
         this.isCorrect = true;
@@ -173,8 +179,8 @@ export default {
     },
     // 纠正到正确的位置
     correctPosition() {
-      console.log(this.page, this.total)
-      console.log(this.distance)
+      // console.log(this.page, this.total)
+      // console.log(this.distance)
       // var offset = (this.distance < 0) ? -15 : 15;
       setTimeout(() => {
         var timer = null;
@@ -182,7 +188,7 @@ export default {
         cancelAnimationFrame(timer);
         var oLeft
         timer = requestAnimationFrame(function fn() {
-          console.log('当前页', that.page, that.pagesLeft)
+          // console.log('当前页', that.page, that.pagesLeft)
           if (that.distance < 0) {
             oLeft = that.pagesLeft[that.page];
             if (oLeft > -that.scrollDistance) {
@@ -197,10 +203,10 @@ export default {
             }
           } else if (that.distance > 0) {
             oLeft = that.pagesLeft[that.page - 1];
-            console.log(oLeft)
+            // console.log(oLeft)
             if (oLeft < 0) {
               that.pagesLeft[that.page - 1] = Math.ceil(Tween.Quart.easeInOut(10, oLeft, 10, 10));
-              console.log(that.pagesLeft)
+              // console.log(that.pagesLeft)
               timer = requestAnimationFrame(fn);
             } else {
               cancelAnimationFrame(timer);

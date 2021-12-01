@@ -25,7 +25,7 @@
             <div class="color-ipt flex-b-c">
               <span>#</span>
               <label class="flex-1">
-                <input type="text" v-model="hex">
+                <input type="text" v-model="hex" maxlength="6">
               </label>
             </div>
             <p>HEX</p>
@@ -33,7 +33,7 @@
           <li class="color-rgb">
             <div class="color-ipt">
               <label>
-                <input type="text" v-model="rgb.r">
+                <input type="text" v-model="rgb.r" maxlength="3">
               </label>
             </div>
             <p>R</p>
@@ -41,7 +41,7 @@
           <li class="color-rgb">
             <div class="color-ipt">
               <label>
-                <input type="text" v-model="rgb.g">
+                <input type="text" v-model="rgb.g" maxlength="3">
               </label>
             </div>
             <p>G</p>
@@ -49,7 +49,7 @@
           <li class="color-rgb">
             <div class="color-ipt">
               <label>
-                <input type="text" v-model="rgb.b">
+                <input type="text" v-model="rgb.b" maxlength="3">
               </label>
             </div>
             <p>B</p>
@@ -107,12 +107,19 @@ export default {
         this.initColorH();
         this.bindMove(this.colorHEl, this.setColorHPosition)
       }
+      this.resetHsbPos();
     })
   },
   methods: {
+    // 根据HSB重置位置
+    resetHsbPos() {
+      this.hsbH.x = this.hsb.h / 360 * this.colorHData.width;
+    },
     // 初始化HSB选择器的一些参数
     initColorH() {
       this.colorHData = this.colorHEl.getBoundingClientRect();
+      this.pickerPosition.x = this.hsb.s / 100 * this.colorPickerData.width;
+      this.pickerPosition.y = this.colorPickerData.height - this.hsb.b / 100 * this.colorPickerData.height;
     },
     // 初始化颜色选择器的一些参数
     initColorPicker() {
@@ -261,6 +268,7 @@ export default {
       return {r: Math.round(rgb.r), g: Math.round(rgb.g), b: Math.round(rgb.b)};
     },
     formatHex(hex) {
+      hex = hex.toUpperCase()
       return (hex.indexOf('#') > -1) ? hex.substring(1) : hex
     }
   }

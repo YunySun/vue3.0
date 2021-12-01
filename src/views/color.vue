@@ -14,7 +14,7 @@ export default {
   components: {ColorController},
   data() {
     return {
-      color: '#ff0000'
+      color: '#521B32'
     }
   }
 }

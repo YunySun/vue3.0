@@ -32,6 +32,16 @@ const routes = [
         path: '/gallery',
         name: 'gallery',
         component: () => import('./views/gallery')
+    },
+    {
+        path: '/verify',
+        name: 'verify',
+        component: () => import('./views/verify')
+    },
+    {
+        path: '/color',
+        name: 'color',
+        component: () => import('./views/color')
     }
 ]
 

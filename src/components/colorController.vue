@@ -1,7 +1,7 @@
 <template>
   <div class="color-ctl-wpp" ref="colorWrapperRef">
     <div class="color-dft flex-b-c">
-      <div class="color flex-1" :style="{backgroundColor: rightHex}"></div>
+      <div class="color flex-1" :style="{backgroundColor: rightHex}" ref="bgcRef"></div>
       <div class="color-btn flex-1">默认颜色</div>
     </div>
     <div class="color-picker">
@@ -25,7 +25,7 @@
             <div class="color-ipt flex-b-c">
               <span>#</span>
               <label class="flex-1">
-                <input type="text" v-model="hex" maxlength="6">
+                <input type="text" v-model="hex" maxlength="6" @input="changeHex" @blur="blurHex">
               </label>
             </div>
             <p>HEX</p>
@@ -33,7 +33,12 @@
           <li class="color-rgb">
             <div class="color-ipt">
               <label>
-                <input type="text" v-model="rgb.r" maxlength="3">
+                <input type="number"
+                       v-model="rgb.r"
+                       maxlength="3"
+                       @input="changeRgbNum('r')"
+                       @blur="blurNum('r')"
+                >
               </label>
             </div>
             <p>R</p>
@@ -41,7 +46,11 @@
           <li class="color-rgb">
             <div class="color-ipt">
               <label>
-                <input type="text" v-model="rgb.g" maxlength="3">
+                <input type="text"
+                       v-model="rgb.g"
+                       maxlength="3"
+                       @input="changeRgbNum('g')"
+                       @blur="blurNum('g')" >
               </label>
             </div>
             <p>G</p>
@@ -49,7 +58,11 @@
           <li class="color-rgb">
             <div class="color-ipt">
               <label>
-                <input type="text" v-model="rgb.b" maxlength="3">
+                <input type="text"
+                       v-model="rgb.b"
+                       maxlength="3"
+                       @input="changeRgbNum('b')"
+                       @blur="blurNum('b')">
               </label>
             </div>
             <p>B</p>
@@ -70,6 +83,7 @@ export default {
     return {
       default: this.color,
       hex: this.formatHex(this.color),
+      // hexModel: this.formatHex(this.color),
       rgb: {r: 0, g: 0, b: 0},
       hsb: {h: 0, s: 0, b: 0},
       pickerHex: '',
@@ -89,9 +103,6 @@ export default {
   },
   created() {
     this.rgb = this.hexToRgb(this.hex);
-    this.hsb = this.rgbToHsb(this.rgb);
-    var pickerRgb = this.hsbToRgb({h: this.hsb.h, s: 100, b: 100});
-    this.pickerHex = '#' + this.rgbToHex(pickerRgb)
   },
   mounted() {
     this.$nextTick(() => {
@@ -107,19 +118,69 @@ export default {
         this.initColorH();
         this.bindMove(this.colorHEl, this.setColorHPosition)
       }
-      this.resetHsbPos();
+      this.resetHsb();
     })
   },
   methods: {
-    // 根据HSB重置位置
-    resetHsbPos() {
+    blurNum(type) {
+      var num = this.rgb[type];
+      if (num === '') {
+        this.rgb[type] = 0;
+        this.hex = this.rgbToHex(this.rgb)
+        this.resetHsb();
+      }
+    },
+    // 修改rgb颜色
+    changeRgbNum(type) {
+      var num = this.rgb[type];
+      if (num === '') return;
+      num = Math.min(255, Math.max(0, num));
+      this.rgb[type] = num;
+      this.hex = this.rgbToHex(this.rgb)
+      this.resetHsb();
+    },
+    // 离开输入hex
+    blurHex() {
+      // if (!this.hex) {
+      //   this.hex = '000000';
+      //   this.rgb = this.hexToRgb(this.hex);
+      //   this.resetHsb();
+      // }
+      this.hex = this.rgbToHex(this.rgb)
+    },
+    // hex输入框修改
+    changeHex() {
+      if (this.$refs.bgcRef) {
+        var elColor = getComputedStyle(this.$refs.bgcRef).backgroundColor;
+        var colorArr = elColor.replace(/(?:\(|\)|rgb|RGB)*/g, "").split(',');
+        this.rgb = {
+          r: parseInt(colorArr[0]),
+          g: parseInt(colorArr[1]),
+          b: parseInt(colorArr[2])
+        }
+        this.resetHsb();
+      }
+    },
+    // 重置HSB 画板背景色
+    resetPanelBgc() {
+      var pickerRgb = this.hsbToRgb({h: this.hsb.h, s: 100, b: 100});
+      this.pickerHex = '#' + this.rgbToHex(pickerRgb);
+    },
+    // 重置HSB位置
+    resetHsbPosition() {
       this.hsbH.x = this.hsb.h / 360 * this.colorHData.width;
+      this.pickerPosition.x = this.hsb.s / 100 * this.colorPickerData.width;
+      this.pickerPosition.y = this.colorPickerData.height - this.hsb.b / 100 * this.colorPickerData.height;
+    },
+    // HSB重置
+    resetHsb() {
+      this.hsb = this.rgbToHsb(this.rgb);
+      this.resetPanelBgc()
+      this.resetHsbPosition();
     },
     // 初始化HSB选择器的一些参数
     initColorH() {
       this.colorHData = this.colorHEl.getBoundingClientRect();
-      this.pickerPosition.x = this.hsb.s / 100 * this.colorPickerData.width;
-      this.pickerPosition.y = this.colorPickerData.height - this.hsb.b / 100 * this.colorPickerData.height;
     },
     // 初始化颜色选择器的一些参数
     initColorPicker() {
@@ -132,10 +193,14 @@ export default {
       this.hsbH.x = Math.min(maxX, Math.max(0, hX));
       this.hsb.h = parseInt(360 * this.hsbH.x / maxX);
       console.log(this.hsb)
-      var pickerRgb = this.hsbToRgb({h: this.hsb.h, s: 100, b: 100});
-      this.pickerHex = '#' + this.rgbToHex(pickerRgb)
+      this.resetPanelBgc();
+      this.getHexAndRgb();
+    },
+    // 通过hsb获取hex和rgb
+    getHexAndRgb() {
       this.rgb = this.hsbToRgb(this.hsb);
       this.hex = this.rgbToHex(this.rgb);
+      // this.hexModel = this.hex;
     },
     // 设置取色点位置
     setColorPickerPosition(x, y) {
@@ -151,9 +216,7 @@ export default {
 
       this.hsb.s = parseInt(100 * pickerLimitedX / maxX);
       this.hsb.b = parseInt(100 * (maxY - pickerLimitedY) / maxY);
-      this.rgb = this.hsbToRgb(this.hsb);
-      this.hex = this.rgbToHex(this.rgb);
-
+      this.getHexAndRgb();
       console.log(this.hsb)
     },
     // 绑定事件
@@ -410,6 +473,21 @@ export default {
           input {
             width: 100%;
             text-align: center;
+          }
+
+          input::-webkit-inner-spin-button {
+            -webkit-appearance: none !important;
+
+          }
+
+          input::-webkit-outer-spin-button{
+            -webkit-appearance: none !important;
+
+          }
+
+          input[type="number"]{
+            -moz-appearance: textfield;
+
           }
         }
       }
